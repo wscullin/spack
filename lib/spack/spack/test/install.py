@@ -58,6 +58,25 @@ def fake_fetchify(url, pkg):
 
 
 @pytest.mark.usefixtures('install_mockery')
+def test_source_copy(mock_archive):
+    # Get a basic concrete spec for the trivial install package.
+    spec = Spec('trivial-install-test-package')
+    spec.concretize()
+    assert spec.concrete
+
+    # Get the package
+    pkg = spack.repo.get(spec)
+
+    fake_fetchify(mock_archive.url, pkg)
+
+    try:
+        pkg.do_install(source_install=True)
+    except Exception:
+        pkg.remove_prefix()
+        raise
+
+
+@pytest.mark.usefixtures('install_mockery')
 def test_install_and_uninstall(mock_archive):
     # Get a basic concrete spec for the trivial install package.
     spec = Spec('trivial-install-test-package')

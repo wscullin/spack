@@ -64,6 +64,9 @@ the dependencies"""
         '--keep-stage', action='store_true', dest='keep_stage',
         help="don't remove the build stage if installation succeeds")
     subparser.add_argument(
+        '--install-source', action='store_true', dest='install_source',
+        help="install source files in prefix")
+    subparser.add_argument(
         '-n', '--no-checksum', action='store_true', dest='no_checksum',
         help="do not check packages against checksum")
     subparser.add_argument(
@@ -305,6 +308,7 @@ def install(parser, args, **kwargs):
     kwargs.update({
         'keep_prefix': args.keep_prefix,
         'keep_stage': args.keep_stage,
+        'install_source': args.install_source,
         'install_deps': 'dependencies' in args.things_to_install,
         'make_jobs': args.jobs,
         'run_tests': args.run_tests,
