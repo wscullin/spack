@@ -1268,7 +1268,9 @@ class PackageBase(with_metaclass(PackageMeta, object)):
             self.stage.keep = keep_stage
             with self._stage_and_write_lock():
                 if install_source and os.path.isdir(self.stage.source_path):
-                    src_target = join_path(self.spec.prefix, 'src')
+                    src_target = join_path(
+                        self.spec.prefix, 'share', self.name, 'src'
+                    )
                     tty.msg('Copying source to {0}'.format(src_target))
                     install_tree(self.stage.source_path, src_target)
                 # Run the pre-install hook in the child process after
