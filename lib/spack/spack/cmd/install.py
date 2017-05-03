@@ -64,7 +64,7 @@ the dependencies"""
         '--keep-stage', action='store_true', dest='keep_stage',
         help="don't remove the build stage if installation succeeds")
     subparser.add_argument(
-        '--install-source', action='store_true', dest='install_source',
+        '--source', action='store_true', dest='install_source',
         help="install source files in prefix")
     subparser.add_argument(
         '-n', '--no-checksum', action='store_true', dest='no_checksum',
