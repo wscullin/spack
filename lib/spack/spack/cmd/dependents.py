@@ -30,7 +30,6 @@ from llnl.util.tty.colify import colify
 import spack
 import spack.store
 import spack.cmd
-from spack.spec import Spec
 
 description = "show installed packages that depend on another"
 section = "basic"
@@ -83,7 +82,6 @@ def dependents(parser, args):
     specs = spack.cmd.parse_specs(args.spec)
     if len(specs) != 1:
         tty.die("spack dependents takes only one spec.")
-
 
     if args.all:
         spec = specs[0]
