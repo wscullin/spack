@@ -196,16 +196,8 @@ _separators = '[%s]' % ''.join(color_formats.keys())
    every time we call str()"""
 _any_version = VersionList([':'])
 
-# Special types of dependencies.
+"""Types of dependencies that Spack understands."""
 alldeps = ('build', 'link', 'run')
-norun   = ('link', 'build')
-special_types = {
-    'alldeps': alldeps,
-    'all': alldeps,  # allow "all" as string but not symbol.
-    'norun': norun,
-}
-
-legal_deps = tuple(special_types) + alldeps
 
 """Max integer helps avoid passing too large a value to cyaml."""
 maxint = 2 ** (ctypes.sizeof(ctypes.c_int) * 8 - 1) - 1
@@ -213,7 +205,7 @@ maxint = 2 ** (ctypes.sizeof(ctypes.c_int) * 8 - 1) - 1
 
 def validate_deptype(deptype):
     if isinstance(deptype, str):
-        if deptype not in legal_deps:
+        if deptype not in alldeps:
             raise InvalidDependencyTypeError(
                 "Invalid dependency type: %s" % deptype)
 
@@ -230,10 +222,7 @@ def canonical_deptype(deptype):
         return alldeps
 
     elif isinstance(deptype, string_types):
-        return special_types.get(deptype, (deptype,))
-
-    elif isinstance(deptype, (tuple, list)):
-        return (sum((canonical_deptype(d) for d in deptype), ()))
+        return (deptype,)
 
     return deptype
 
