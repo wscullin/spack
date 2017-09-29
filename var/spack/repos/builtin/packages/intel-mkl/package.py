@@ -23,6 +23,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 ##############################################################################
 import os
+import sys
 
 from spack import *
 from spack.environment import EnvironmentModifications
@@ -85,7 +86,7 @@ class IntelMkl(IntelPackage):
                 mkl_threading = ['libmkl_intel_thread']
                 omp_threading = ['libiomp5']
 
-                omp_root = prefix.compilers_and_libraries.linux.lib.intel64
+                omp_root = prefix
                 omp_libs = find_libraries(
                     omp_threading, root=omp_root, shared=shared)
             elif '%gcc' in spec:
@@ -98,7 +99,7 @@ class IntelMkl(IntelPackage):
 
         # TODO: TBB threading: ['libmkl_tbb_thread', 'libtbb', 'libstdc++']
 
-        mkl_root = prefix.compilers_and_libraries.linux.mkl.lib.intel64
+        mkl_root = prefix
 
         mkl_libs = find_libraries(
             mkl_integer + ['libmkl_core'] + mkl_threading,
@@ -144,7 +145,10 @@ class IntelMkl(IntelPackage):
             raise InstallError('No MPI found for scalapack')
 
         integer = 'ilp64' if '+ilp64' in self.spec else 'lp64'
-        mkl_root = self.prefix.compilers_and_libraries.linux.mkl.lib.intel64
+        if sys.platform == 'darwin':
+            mkl_root = self.prefix.mkl.lib
+        else:
+            mkl_root = self.prefix.compilers_and_libraries.linux.mkl.lib.intel64
         shared = True if '+shared' in self.spec else False
 
         libs = find_libraries(
@@ -157,7 +161,10 @@ class IntelMkl(IntelPackage):
 
     def setup_dependent_environment(self, spack_env, run_env, dependent_spec):
         # set up MKLROOT for everyone using MKL package
-        mkl_root = self.prefix.compilers_and_libraries.linux.mkl.lib.intel64
+        if sys.platform == 'darwin':
+            mkl_root = self.prefix.mkl.lib
+        else:
+            mkl_root = self.prefix.compilers_and_libraries.linux.mkl.lib.intel64
 
         spack_env.set('MKLROOT', self.prefix)
         spack_env.append_path('SPACK_COMPILER_EXTRA_RPATHS', mkl_root)
