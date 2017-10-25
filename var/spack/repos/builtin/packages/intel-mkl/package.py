@@ -34,6 +34,8 @@ class IntelMkl(IntelPackage):
 
     homepage = "https://software.intel.com/en-us/intel-mkl"
 
+    version('2018.0.128', '0fa23779816a0f2ee23a396fc1af9978',
+            url="http://registrationcenter-download.intel.com/akdlm/irc_nas/tec/12070/l_mkl_2018.0.128.tgz")
     version('2017.3.196', '4a2eb4bee789391d9c07d7c348a80702',
             url="http://registrationcenter-download.intel.com/akdlm/irc_nas/tec/11544/l_mkl_2017.3.196.tgz")
     version('2017.2.174', 'ef39a12dcbffe5f4a0ef141b8759208c',
@@ -49,12 +51,21 @@ class IntelMkl(IntelPackage):
 
     variant('shared', default=True, description='Builds shared library')
     variant('ilp64', default=False, description='64 bit integers')
-    variant('openmp', default=False, description='OpenMP multithreading layer')
+    variant(
+        'threads', default='none',
+        description='Multithreading support',
+        values=('openmp', 'none'),
+        multi=False
+    )
 
     provides('blas')
     provides('lapack')
     provides('scalapack')
     provides('mkl')
+
+    if sys.platform == 'darwin':
+        # there is no libmkl_gnu_thread on macOS
+        conflicts('threads=openmp', when='%gcc')
 
     @property
     def license_required(self):
@@ -81,12 +92,19 @@ class IntelMkl(IntelPackage):
 
         omp_libs = LibraryList([])
 
-        if '+openmp' in spec:
+        if spec.satisfies('threads=openmp'):
             if '%intel' in spec:
                 mkl_threading = ['libmkl_intel_thread']
                 omp_threading = ['libiomp5']
 
+<<<<<<< HEAD
                 omp_root = prefix
+=======
+                if sys.platform != 'darwin':
+                    omp_root = prefix.compilers_and_libraries.linux.lib.intel64
+                else:
+                    omp_root = prefix.lib
+>>>>>>> 554937780bf9bad2e1e2b238aa95c6fd862b711e
                 omp_libs = find_libraries(
                     omp_threading, root=omp_root, shared=shared)
             elif '%gcc' in spec:
@@ -99,7 +117,14 @@ class IntelMkl(IntelPackage):
 
         # TODO: TBB threading: ['libmkl_tbb_thread', 'libtbb', 'libstdc++']
 
+<<<<<<< HEAD
         mkl_root = prefix
+=======
+        if sys.platform != 'darwin':
+            mkl_root = prefix.compilers_and_libraries.linux.mkl.lib.intel64
+        else:
+            mkl_root = prefix.mkl.lib
+>>>>>>> 554937780bf9bad2e1e2b238aa95c6fd862b711e
 
         mkl_libs = find_libraries(
             mkl_integer + ['libmkl_core'] + mkl_threading,
@@ -129,7 +154,10 @@ class IntelMkl(IntelPackage):
         # inspect the root package which asked for Scalapack and check which
         # MPI it depends on.
         root = self.spec.root
-        if '^openmpi' in root:
+        if sys.platform == 'darwin' and '^mpich' in root:
+            # MKL 2018 supports only MPICH on darwin
+            libnames.append('libmkl_blacs_mpich')
+        elif '^openmpi' in root:
             libnames.append('libmkl_blacs_openmpi')
         elif '^mpich@1' in root:
             libnames.append('libmkl_blacs')
@@ -145,10 +173,16 @@ class IntelMkl(IntelPackage):
             raise InstallError('No MPI found for scalapack')
 
         integer = 'ilp64' if '+ilp64' in self.spec else 'lp64'
+<<<<<<< HEAD
         if sys.platform == 'darwin':
             mkl_root = self.prefix.mkl.lib
         else:
             mkl_root = self.prefix.compilers_and_libraries.linux.mkl.lib.intel64
+=======
+        mkl_root = self.prefix.mkl.lib if sys.platform == 'darwin' else \
+            self.prefix.compilers_and_libraries.linux.mkl.lib.intel64
+
+>>>>>>> 554937780bf9bad2e1e2b238aa95c6fd862b711e
         shared = True if '+shared' in self.spec else False
 
         libs = find_libraries(
@@ -161,10 +195,15 @@ class IntelMkl(IntelPackage):
 
     def setup_dependent_environment(self, spack_env, run_env, dependent_spec):
         # set up MKLROOT for everyone using MKL package
+<<<<<<< HEAD
         if sys.platform == 'darwin':
             mkl_root = self.prefix.mkl.lib
         else:
             mkl_root = self.prefix.compilers_and_libraries.linux.mkl.lib.intel64
+=======
+        mkl_root = self.prefix.mkl.lib if sys.platform == 'darwin' else \
+            self.prefix.compilers_and_libraries.linux.mkl.lib.intel64
+>>>>>>> 554937780bf9bad2e1e2b238aa95c6fd862b711e
 
         spack_env.set('MKLROOT', self.prefix)
         spack_env.append_path('SPACK_COMPILER_EXTRA_RPATHS', mkl_root)
