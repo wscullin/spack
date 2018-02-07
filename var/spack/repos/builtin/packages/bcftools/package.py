@@ -6,7 +6,7 @@
 # Created by Todd Gamblin, tgamblin@llnl.gov, All rights reserved.
 # LLNL-CODE-647188
 #
-# For details, see https://github.com/llnl/spack
+# For details, see https://github.com/spack/spack
 # Please also see the NOTICE and LICENSE files for our notice and the LGPL.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -25,7 +25,7 @@
 from spack import *
 
 
-class Bcftools(Package):
+class Bcftools(AutotoolsPackage):
     """BCFtools is a set of utilities that manipulate variant calls in the
        Variant Call Format (VCF) and its binary counterpart BCF. All
        commands work transparently with both VCFs and BCFs, both
@@ -43,7 +43,3 @@ class Bcftools(Package):
     depends_on('htslib@1.4',   when='@1.4')
     depends_on('htslib@1.3.1', when='@1.3.1')
     depends_on('htslib@1.2', when='@1.2')
-
-    def install(self, spec, prefix):
-        make("prefix=%s" % prefix, "all")
-        make("prefix=%s" % prefix, "install")

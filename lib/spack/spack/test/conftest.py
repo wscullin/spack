@@ -6,7 +6,7 @@
 # Created by Todd Gamblin, tgamblin@llnl.gov, All rights reserved.
 # LLNL-CODE-647188
 #
-# For details, see https://github.com/llnl/spack
+# For details, see https://github.com/spack/spack
 # Please also see the NOTICE and LICENSE files for our notice and the LGPL.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -28,7 +28,7 @@ import os
 import shutil
 import re
 
-import ordereddict_backport
+import spack.util.ordereddict
 
 import py
 import pytest
@@ -240,7 +240,7 @@ def config(configuration_dir):
     spack.package_prefs.PackagePrefs.clear_caches()
     spack.config.clear_config_caches()
     real_scope = spack.config.config_scopes
-    spack.config.config_scopes = ordereddict_backport.OrderedDict()
+    spack.config.config_scopes = spack.util.ordereddict.OrderedDict()
     spack.config.ConfigScope('site', str(configuration_dir.join('site')))
     spack.config.ConfigScope('system', str(configuration_dir.join('system')))
     spack.config.ConfigScope('user', str(configuration_dir.join('user')))
@@ -361,12 +361,15 @@ def refresh_db_on_exit(database):
 def install_mockery(tmpdir, config, builtin_mock):
     """Hooks a fake install directory, DB, and stage directory into Spack."""
     layout = spack.store.layout
+    extensions = spack.store.extensions
     db = spack.store.db
     new_opt = str(tmpdir.join('opt'))
 
     # Use a fake install directory to avoid conflicts bt/w
     # installed pkgs and mock packages.
     spack.store.layout = spack.directory_layout.YamlDirectoryLayout(new_opt)
+    spack.store.extensions = spack.directory_layout.YamlExtensionsLayout(
+        new_opt, spack.store.layout)
     spack.store.db = spack.database.Database(new_opt)
 
     # We use a fake package, so skip the checksum.
@@ -376,6 +379,7 @@ def install_mockery(tmpdir, config, builtin_mock):
     spack.do_checksum = True
     # Restore Spack's layout.
     spack.store.layout = layout
+    spack.store.extensions = extensions
     spack.store.db = db
 
 
@@ -459,6 +463,8 @@ def mock_git_repository(tmpdir_factory):
     # Initialize the repository
     with repodir.as_cwd():
         git('init')
+        git('config', 'user.name', 'Spack')
+        git('config', 'user.email', 'spack@spack.io')
         url = 'file://' + str(repodir)
 
         # r0 is just the first commit
@@ -638,7 +644,7 @@ class MockPackage(object):
                  versions=None):
         self.name = name
         self.spec = None
-        self.dependencies = ordereddict_backport.OrderedDict()
+        self.dependencies = spack.util.ordereddict.OrderedDict()
 
         assert len(dependencies) == len(dependency_types)
         for dep, dtype in zip(dependencies, dependency_types):
@@ -684,3 +690,22 @@ class MockPackageMultiRepo(object):
         import collections
         Repo = collections.namedtuple('Repo', ['namespace'])
         return Repo('mockrepo')
+
+##########
+# Specs of various kind
+##########
+
+
+@pytest.fixture(
+    params=[
+        'conflict%clang',
+        'conflict%clang+foo',
+        'conflict-parent%clang',
+        'conflict-parent@0.9^conflict~foo'
+    ]
+)
+def conflict_spec(request):
+    """Specs which violate constraints specified with the "conflicts"
+    directive in the "conflict" package.
+    """
+    return request.param

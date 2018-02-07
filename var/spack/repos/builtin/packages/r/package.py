@@ -6,7 +6,7 @@
 # Created by Todd Gamblin, tgamblin@llnl.gov, All rights reserved.
 # LLNL-CODE-647188
 #
-# For details, see https://github.com/llnl/spack
+# For details, see https://github.com/spack/spack
 # Please also see the NOTICE and LICENSE files for our notice and the LGPL.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -34,10 +34,12 @@ class R(AutotoolsPackage):
     Please consult the R project homepage for further information."""
 
     homepage = "https://www.r-project.org"
-    url = "https://cloud.r-project.org/src/base/R-3/R-3.4.0.tar.gz"
+    url = "https://cloud.r-project.org/src/base/R-3/R-3.4.3.tar.gz"
 
     extendable = True
 
+    version('3.4.3', 'bc55db54f992fda9049201ca62d2a584')
+    version('3.4.2', '1cd6d37850188e7f190f1eb94a24ca1f')
     version('3.4.1', '3a79c01dc0527c62e80ffb1c489297ea')
     version('3.4.0', '75083c23d507b9c16d5c6afbd7a827e7')
     version('3.3.3', '0ac211ec15e813a24f8f4a5a634029a4')
@@ -94,11 +96,16 @@ class R(AutotoolsPackage):
         spec   = self.spec
         prefix = self.prefix
 
+        tclConfig_path = join_path(spec['tcl'].prefix.lib, 'tclConfig.sh')
+        tkConfig_path = join_path(spec['tk'].prefix.lib, 'tkConfig.sh')
+
         config_args = [
             '--libdir={0}'.format(join_path(prefix, 'rlib')),
             '--enable-R-shlib',
             '--enable-BLAS-shlib',
-            '--enable-R-framework=no'
+            '--enable-R-framework=no',
+            '--with-tcl-config={0}'.format(tclConfig_path),
+            '--with-tk-config={0}'.format(tkConfig_path),
         ]
 
         if '+external-lapack' in spec:

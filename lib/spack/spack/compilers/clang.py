@@ -6,7 +6,7 @@
 # Created by Todd Gamblin, tgamblin@llnl.gov, All rights reserved.
 # LLNL-CODE-647188
 #
-# For details, see https://github.com/llnl/spack
+# For details, see https://github.com/spack/spack
 # Please also see the NOTICE and LICENSE files for our notice and the LGPL.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -126,14 +126,14 @@ class Clang(Compiler):
 
     @classmethod
     def default_version(cls, comp):
-        """The '--version' option works for clang compilers.
+        """The ``--version`` option works for clang compilers.
         On most platforms, output looks like this::
 
             clang version 3.1 (trunk 149096)
             Target: x86_64-unknown-linux-gnu
             Thread model: posix
 
-        On Mac OS X, it looks like this::
+        On macOS, it looks like this::
 
             Apple LLVM version 7.0.2 (clang-700.1.81)
             Target: x86_64-apple-darwin15.2.0
@@ -157,16 +157,6 @@ class Clang(Compiler):
             _version_cache[comp] = ver
 
         return _version_cache[comp]
-
-    def _find_full_path(self, path):
-        basename = os.path.basename(path)
-
-        if not self.is_apple or basename not in ('clang', 'clang++'):
-            return super(Clang, self)._find_full_path(path)
-
-        xcrun = Executable('xcrun')
-        full_path = xcrun('-f', basename, output=str)
-        return full_path.strip()
 
     @classmethod
     def fc_version(cls, fc):
@@ -201,6 +191,14 @@ class Clang(Compiler):
             # with Clang. Those point to Spack's compiler wrappers and
             # consequently render MPI non-functional outside of Spack.
             return
+
+        # Use special XCode versions of compiler wrappers when using XCode
+        # Overwrites build_environment's setting of SPACK_CC and SPACK_CXX
+        xcrun = Executable('xcrun')
+        xcode_clang = xcrun('-f', 'clang', output=str).strip()
+        xcode_clangpp = xcrun('-f', 'clang++', output=str).strip()
+        env.set('SPACK_CC', xcode_clang, force=True)
+        env.set('SPACK_CXX', xcode_clangpp, force=True)
 
         xcode_select = Executable('xcode-select')
 
