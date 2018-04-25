@@ -163,7 +163,7 @@ compilers`` or ``spack compiler list``:
 Any of these compilers can be used to build Spack packages.  More on
 how this is done is in :ref:`sec-specs`.
 
-.. _spack-compiler-add:
+.. _cmd-spack-compiler-add:
 
 ^^^^^^^^^^^^^^^^^^^^^^
 ``spack compiler add``
@@ -171,7 +171,7 @@ how this is done is in :ref:`sec-specs`.
 
 An alias for ``spack compiler find``.
 
-.. _spack-compiler-find:
+.. _cmd-spack-compiler-find:
 
 ^^^^^^^^^^^^^^^^^^^^^^^
 ``spack compiler find``
@@ -202,7 +202,7 @@ installed, but you know that new compilers have been added to your
 This loads the environment module for gcc-4.9.0 to add it to
 ``PATH``, and then it adds the compiler to Spack.
 
-.. _spack-compiler-info:
+.. _cmd-spack-compiler-info:
 
 ^^^^^^^^^^^^^^^^^^^^^^^
 ``spack compiler info``
@@ -1203,7 +1203,14 @@ Here's an example of an external configuration for cray modules:
 This tells Spack that for whatever package that depends on mpi, load the
 cray-mpich module into the environment. You can then be able to use whatever
 environment variables, libraries, etc, that are brought into the environment
-via module load.
+via module load.  
+
+.. note::
+
+    For Cray-provided packages, it is best to use ``modules:`` instead of ``paths:`` 
+    in ``packages.yaml``, because the Cray Programming Environment heavily relies on
+    modules (e.g., loading the ``cray-mpich`` module adds MPI libraries to the 
+    compiler wrapper link line).
 
 You can set the default compiler that Spack can use for each compiler type.
 If you want to use the Cray defaults, then set them under ``all:`` in packages.yaml.
