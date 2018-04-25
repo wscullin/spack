@@ -203,11 +203,6 @@ class IntelMkl(IntelPackage):
     def setup_dependent_environment(self, spack_env, run_env, dependent_spec):
         # set up MKLROOT for everyone using MKL package
         if sys.platform == 'darwin':
-            mkl_root = self.prefix.mkl.lib
-        else:
-            mkl_root = self.prefix.compilers_and_libraries.linux.mkl.lib.intel64
-
-       if sys.platform == 'darwin':
             mkl_lib = self.prefix.mkl.lib
             mkl_root = self.prefix.mkl
         else:
