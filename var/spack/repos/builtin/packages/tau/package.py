@@ -37,6 +37,8 @@ class Tau(Package):
     homepage = "http://www.cs.uoregon.edu/research/tau"
     url      = "https://www.cs.uoregon.edu/research/tau/tau_releases/tau-2.25.tar.gz"
 
+    version('2.27', '76602d35fc96f546b5b9dcaf09158651')
+    version('2.26', '2af91f02ad26d5bf0954146c56a8cdfa')
     version('2.25', '46cd48fa3f3c4ce0197017b3158a2b43')
     version('2.24.1', '6635ece6d1f08215b02f5d0b3c1e971b')
     version('2.24', '57ce33539c187f2e5ec68f0367c76db4')
@@ -53,14 +55,20 @@ class Tau(Package):
     variant('comm', default=True,
             description=' Generate profiles with MPI communicator info')
 
+    variant('cuda', default=False, description='Enables OpenCL and CUDA profiling.')
+    variant('python', default=False, description='Enable Python')
+
     # TODO : Try to build direct OTF2 support? Some parts of the OTF support
     # TODO : library in TAU are non-conformant,
     # TODO : and fail at compile-time. Further, SCOREP is compiled with OTF2
     # support.
+    depends_on('papi')
     depends_on('pdt')  # Required for TAU instrumentation
     depends_on('scorep', when='+scorep')
     depends_on('binutils', when='~download')
     depends_on('mpi', when='+mpi')
+    depends_on('cuda', when='+cuda')
+    depends_on('python', when='+python')
 
     def set_compiler_options(self):
 
@@ -129,6 +137,13 @@ class Tau(Package):
 
         if '+comm' in spec:
             options.append('-PROFILECOMMUNICATORS')
+
+        if '+python' in spec:
+            options.extend('-pythoninc=%s' % spec['python'].include )  
+            options.extend('-pythonlib=%s' % spec['python'].lib ) 
+
+        if '+cuda' in spec:
+            options.extend('-cuda=%s' % spec['cuda'].prefix )
 
         compiler_specific_options = self.set_compiler_options()
         options.extend(compiler_specific_options)
